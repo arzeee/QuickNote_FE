@@ -1,4 +1,16 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  assetPrefix: "/quicknote",
 
-export default nextConfig;
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/started",
+        permanent: true,
+      },
+    ];
+  },
+};
+
+export default nextConfig;
