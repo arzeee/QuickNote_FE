@@ -160,7 +160,7 @@ export default function UploadPage() {
     }
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/process", {
+      const res = await fetch("/api/process", {
         method: "POST",
         body: formData,
       });
