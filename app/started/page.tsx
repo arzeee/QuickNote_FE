@@ -20,7 +20,7 @@ export default function StartedPage() {
                   />
                 </svg>
               </div>
-              <div className="text-white text-xs font-medium">John</div>
+              <div className="text-white text-xs font-medium">Dani</div>
             </div>
 
             {/* Menu Icons */}
