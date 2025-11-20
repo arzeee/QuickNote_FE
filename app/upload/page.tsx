@@ -160,10 +160,13 @@ export default function UploadPage() {
     }
 
     try {
-      const res = await fetch("/api/process", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        "https://tzzzzzzzzzzzzzzzzzz-quicknote-be.hf.space/process",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!res.ok) throw new Error(`Upload failed (${res.status})`);
 
@@ -180,7 +183,7 @@ export default function UploadPage() {
       localStorage.setItem("summary", data.summary || "");
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setDone(true);
-      window.location.href = "/transcript";
+      window.location.href = "/quicknote/transcript";
     } catch (err) {
       console.error(err);
       alert("Upload gagal: " + err);
@@ -196,7 +199,10 @@ export default function UploadPage() {
           {/* Navbar */}
           <div className="bg-gradient-to-b from-blue-500 to-purple-600 p-4 flex flex-row items-center justify-between">
             <div className="bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
-              <a href="/started" className="text-sm font-semibold mx-2 p-2">
+              <a
+                href="/quicknote/started"
+                className="text-sm font-semibold mx-2 p-2"
+              >
                 Cancel
               </a>
             </div>
@@ -235,7 +241,7 @@ export default function UploadPage() {
               {done && (
                 <div className="bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
                   <a
-                    href="/transcript"
+                    href="/quicknote/transcript"
                     className="text-sm font-semibold mx-2 p-2"
                   >
                     Next
@@ -285,7 +291,8 @@ export default function UploadPage() {
                         Choose Files
                       </button>
                       <p className="text-xs text-gray-500 mt-3">
-                      Supported formats: MP3, MP4, WAV, M4A, AVI, MOV, WMV, FLV
+                        Supported formats: MP3, MP4, WAV, M4A, AVI, MOV, WMV,
+                        FLV
                       </p>
                     </div>
                   </div>
@@ -486,7 +493,7 @@ export default function UploadPage() {
                   ✅ Sudah selesai
                 </h2>
                 <a
-                  href="/transcript"
+                  href="/quicknote/transcript"
                   className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
                 >
                   Next →
@@ -499,4 +506,3 @@ export default function UploadPage() {
     </div>
   );
 }
-

@@ -84,7 +84,7 @@ export default function TranscriptPage() {
           {/* Navbar */}
           <div className="bg-gradient-to-b from-blue-500 to-purple-600 p-4 flex flex-row items-center justify-between">
             <div className="bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
-              <a href="/upload" className="text-sm font-semibold mx-2 p-2">
+              <a href="/quicknote/upload" className="text-sm font-semibold mx-2 p-2">
                 Back
               </a>
             </div>

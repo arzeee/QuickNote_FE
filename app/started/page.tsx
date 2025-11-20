@@ -74,7 +74,7 @@ export default function StartedPage() {
 
             {/* Logo */}
             <div className="hidden md:flex w-10 h-10 bg-white/20 rounded-xl items-center justify-center text-white hover:bg-white/30 transition">
-              <a href="/started" className="text-lg font-bold">
+              <a href="/quicknote/started" className="text-lg font-bold">
                 Q!
               </a>
             </div>
@@ -187,7 +187,7 @@ export default function StartedPage() {
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center px-4 pb-4">
                 <a
-                  href="/upload"
+                  href="/quicknote/upload"
                   className="inline-flex items-center justify-center px-6 py-3 sm:px-8 sm:py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-sm sm:text-base font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
                 >
                   <svg
