@@ -2,22 +2,24 @@
 
 import { useEffect, useState } from "react";
 import jsPDF from "jspdf";
+import { LANGUAGES } from "../lib/languages";
+
 
 export default function TranscriptPage() {
   const [transcript, setTranscript] = useState("");
   const [summary, setSummary] = useState("");
+  const [translatedSummary, setTranslatedSummary] = useState("");
+
+  const [selectedLang, setSelectedLang] = useState("english");
+  const [loadingTranslate, setLoadingTranslate] = useState(false);
 
   useEffect(() => {
-    setTranscript(localStorage.getItem("transcript") || "No transcript found.");
-    setSummary(localStorage.getItem("summary") || "No summary found.");
+    setTranscript(localStorage.getItem("transcript") || "");
+    setSummary(localStorage.getItem("summary") || "");
   }, []);
 
   const handleDownloadPDF = () => {
-    const doc = new jsPDF({
-      orientation: "p",
-      unit: "mm",
-      format: "a4",
-    });
+    const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" });
 
     const margin = 15;
     let y = margin;
@@ -30,9 +32,10 @@ export default function TranscriptPage() {
     doc.text("Transcript:", margin, y);
     y += 8;
 
-    doc.setFontSize(11);
     const transcriptLines = doc.splitTextToSize(transcript, 180);
+    doc.setFontSize(11);
     doc.text(transcriptLines, margin, y);
+
     y += transcriptLines.length * 6 + 10;
 
     doc.setFontSize(14);
@@ -43,21 +46,31 @@ export default function TranscriptPage() {
     doc.setFontSize(11);
     doc.text(summaryLines, margin, y);
 
+    if (translatedSummary) {
+      y += summaryLines.length * 6 + 10;
+      doc.setFontSize(14);
+      doc.text("Translated Summary:", margin, y);
+      y += 8;
+
+      const translatedLines = doc.splitTextToSize(translatedSummary, 180);
+      doc.setFontSize(11);
+      doc.text(translatedLines, margin, y);
+    }
+
     doc.save("transcript.pdf");
   };
 
-  // 🔹 Fungsi bantu untuk otomatis bagi teks panjang jadi paragraf
   const splitIntoParagraphs = (text: string): string[] => {
-    // Jika teks pendek, langsung satu paragraf
+    if (!text) return [];
     if (text.length < 600) return [text.trim()];
 
-    const sentences = text.split(/(?<=[.?!])\s+/); // pisah berdasarkan titik/koma
+    const sentences = text.split(/(?<=[.?!])\s+/);
     const paragraphs: string[] = [];
     let current = "";
 
     for (const s of sentences) {
       current += s + " ";
-      if (current.length > 1000) { // batas panjang tiap paragraf
+      if (current.length > 1000) {
         paragraphs.push(current.trim());
         current = "";
       }
@@ -68,62 +81,125 @@ export default function TranscriptPage() {
   };
 
   const renderParagraphs = (text: string) =>
-    splitIntoParagraphs(text).map((para, i) => (
-      <p
-        key={i}
-        className="text-sm text-gray-700 mb-4 leading-relaxed text-justify indent-8"
-      >
-        {para}
+    splitIntoParagraphs(text).map((p, i) => (
+      <p key={i} className="text-sm text-gray-700 mb-4 leading-relaxed text-justify indent-8">
+        {p}
       </p>
     ));
+
+  const handleTranslate = async () => {
+    setLoadingTranslate(true);
+
+    const formData = new FormData();
+    formData.append("summary", summary);
+    formData.append("target_language", selectedLang);
+
+    const res = await fetch(
+      "https://tzzzzzzzzzzzzzzzzzz-quicknote-be.hf.space/resummarize", 
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    const data = await res.json();
+    setTranslatedSummary(data.summary);
+
+    setLoadingTranslate(false);
+  };
 
   return (
     <div className="bg-gradient-to-b from-sky-200 to-white min-h-screen w-screen overflow-y-auto p-10">
       <div className="min-h-full bg-white/90 backdrop-blur-sm shadow-lg rounded-3xl overflow-visible">
         <div className="flex flex-col min-h-full">
+
           {/* Navbar */}
           <div className="bg-gradient-to-b from-blue-500 to-purple-600 p-4 flex flex-row items-center justify-between">
-            <div className="bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition">
-              <a href="/quicknote/upload" className="text-sm font-semibold mx-2 p-2">
-                Back
-              </a>
-            </div>
+            <a
+              href="/quicknote/upload"
+              className="bg-white/20 rounded-xl text-white px-4 py-2 text-sm hover:bg-white/30 transition"
+            >
+              Back
+            </a>
+
             <h2 className="text-white font-semibold">Transcript</h2>
-            <div></div>
+
+            <div />
           </div>
 
-          {/* Transcript Result */}
+          {/* Main Content */}
           <div className="flex-1 p-10 flex items-center justify-center">
             <div className="w-full max-w-4xl">
-              <div className="text-center mb-8">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
-                  Your Transcript is Ready
-                </h1>
-              </div>
+
+              <h1 className="text-2xl text-center font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-8">
+                Your Transcript is Ready
+              </h1>
 
               <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  Transcript
-                </h3>
+
+                {/* TRANSCRIPT */}
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">Transcript</h3>
                 {renderParagraphs(transcript)}
 
-                <h3 className="text-lg font-semibold text-gray-800 mt-6 mb-3">
-                  Summary
-                </h3>
+                {/* SUMMARY TITLE */}
+                <h3 className="text-lg font-semibold text-gray-800 mt-8 mb-3">Summary</h3>
                 {renderParagraphs(summary)}
 
-                <button
-                  onClick={handleDownloadPDF}
-                  className="mt-8 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-purple-700 transition shadow-md hover:shadow-lg"
-                >
-                  Download PDF
-                </button>
+                {/* TRANSLATED SUMMARY */}
+                {translatedSummary && (
+                  <div className="mt-10">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                      Translated Summary ({selectedLang})
+                    </h3>
+                    {renderParagraphs(translatedSummary)}
+                  </div>
+                )}
+
+                {/* BUTTON BAR */}
+                <div className="flex justify-between items-center mt-10">
+
+                  {/* LEFT: Download PDF */}
+                  <button
+                    onClick={handleDownloadPDF}
+                    className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl shadow"
+                  >
+                    Download PDF
+                  </button>
+
+                  {/* RIGHT: Dropdown + Translate */}
+                  <div className="flex gap-3 items-center">
+                    <select
+  className="w-full p-3 border border-gray-300 text-gray-800 rounded-lg focus:ring-2 focus:ring-indigo-500"
+  value={selectedLang}
+  onChange={(e) => setSelectedLang(e.target.value)}
+>
+  {Object.entries(LANGUAGES)
+    .sort((a, b) => a[1].localeCompare(b[1]))
+    .map(([code, name]) => (
+      <option key={code} value={name}>
+        {name.charAt(0).toUpperCase() + name.slice(1)}
+      </option>
+    ))}
+</select>
+
+
+                    <button
+                      onClick={handleTranslate}
+                      className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl shadow"
+                    >
+                      {loadingTranslate ? "Translating..." : "Translate"}
+                    </button>
+                  </div>
+
+                </div>
+
               </div>
+
             </div>
           </div>
+
         </div>
       </div>
     </div>
   );
 }
-

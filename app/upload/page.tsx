@@ -1,108 +1,8 @@
 "use client";
 
 import { useState } from "react";
-const LANGUAGES: Record<string, string> = {
-  en: "english",
-  zh: "chinese",
-  de: "german",
-  es: "spanish",
-  ru: "russian",
-  ko: "korean",
-  fr: "french",
-  ja: "japanese",
-  pt: "portuguese",
-  tr: "turkish",
-  pl: "polish",
-  ca: "catalan",
-  nl: "dutch",
-  ar: "arabic",
-  sv: "swedish",
-  it: "italian",
-  id: "indonesian",
-  hi: "hindi",
-  fi: "finnish",
-  vi: "vietnamese",
-  he: "hebrew",
-  uk: "ukrainian",
-  el: "greek",
-  ms: "malay",
-  cs: "czech",
-  ro: "romanian",
-  da: "danish",
-  hu: "hungarian",
-  ta: "tamil",
-  no: "norwegian",
-  th: "thai",
-  ur: "urdu",
-  hr: "croatian",
-  bg: "bulgarian",
-  lt: "lithuanian",
-  la: "latin",
-  mi: "maori",
-  ml: "malayalam",
-  cy: "welsh",
-  sk: "slovak",
-  te: "telugu",
-  fa: "persian",
-  lv: "latvian",
-  bn: "bengali",
-  sr: "serbian",
-  az: "azerbaijani",
-  sl: "slovenian",
-  kn: "kannada",
-  et: "estonian",
-  mk: "macedonian",
-  br: "breton",
-  eu: "basque",
-  is: "icelandic",
-  hy: "armenian",
-  ne: "nepali",
-  mn: "mongolian",
-  bs: "bosnian",
-  kk: "kazakh",
-  sq: "albanian",
-  sw: "swahili",
-  gl: "galician",
-  mr: "marathi",
-  pa: "punjabi",
-  si: "sinhala",
-  km: "khmer",
-  sn: "shona",
-  yo: "yoruba",
-  so: "somali",
-  af: "afrikaans",
-  oc: "occitan",
-  ka: "georgian",
-  be: "belarusian",
-  tg: "tajik",
-  sd: "sindhi",
-  gu: "gujarati",
-  am: "amharic",
-  yi: "yiddish",
-  lo: "lao",
-  uz: "uzbek",
-  fo: "faroese",
-  ht: "haitian creole",
-  ps: "pashto",
-  tk: "turkmen",
-  nn: "nynorsk",
-  mt: "maltese",
-  sa: "sanskrit",
-  lb: "luxembourgish",
-  my: "myanmar",
-  bo: "tibetan",
-  tl: "tagalog",
-  mg: "malagasy",
-  as: "assamese",
-  tt: "tatar",
-  haw: "hawaiian",
-  ln: "lingala",
-  ha: "hausa",
-  ba: "bashkir",
-  jw: "javanese",
-  su: "sundanese",
-  yue: "cantonese",
-};
+import { LANGUAGES } from "../lib/languages";
+
 
 const sortedLanguages = Object.entries(LANGUAGES).sort((a, b) =>
   a[1].localeCompare(b[1])
@@ -123,18 +23,41 @@ export default function UploadPage() {
   const [language, setLanguage] = useState("id");
   const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFiles(Array.from(e.target.files));
-    }
-  };
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  if (e.target.files) {
+    const selected = Array.from(e.target.files);
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    if (e.dataTransfer.files) {
-      setFiles(Array.from(e.dataTransfer.files));
+    // LIMIT 30MB
+    const maxSize = 30 * 1024 * 1024;
+    const oversized = selected.find((f) => f.size > maxSize);
+
+    if (oversized) {
+      alert(`File "${oversized.name}" melebihi batas 30MB.`);
+      return;
     }
-  };
+
+    setFiles(selected);
+  }
+};
+
+const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  e.preventDefault();
+  if (e.dataTransfer.files) {
+    const dropped = Array.from(e.dataTransfer.files);
+
+    // LIMIT 30MB
+    const maxSize = 30 * 1024 * 1024;
+    const oversized = dropped.find((f) => f.size > maxSize);
+
+    if (oversized) {
+      alert(`File "${oversized.name}" melebihi batas 30MB.`);
+      return;
+    }
+
+    setFiles(dropped);
+  }
+};
+
 
   const handleUrlSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,10 +90,14 @@ export default function UploadPage() {
           body: formData,
         }
       );
-
+      
       if (!res.ok) throw new Error(`Upload failed (${res.status})`);
 
       const data = await res.json();
+       if (data.virus) {
+    alert(data.message);   // 🔥 POPUP TAMPIL
+    return;
+  }
       console.log("=== RESPONSE FROM API ===");
       console.log(data); // pastikan ini tampil dalam bahasa Jerman
       console.log(data.transcript);
@@ -296,26 +223,6 @@ export default function UploadPage() {
                       </p>
                     </div>
                   </div>
-
-                  {/* <div className="bg-white rounded-2xl shadow-lg border border-gray-200">
-                    <div className="p-8">
-                      <form onSubmit={handleUrlSubmit} className="space-y-4">
-                        <input
-                          type="url"
-                          value={url}
-                          onChange={(e) => setUrl(e.target.value)}
-                          placeholder="https://youtube.com/watch?v=..."
-                          className="text-sm w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
-                        />
-                        <button
-                          type="submit"
-                          className="w-full inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg"
-                        >
-                          Import from URL
-                        </button>
-                      </form>
-                    </div>
-                  </div> */}
                 </div>
 
                 {/* Parameter Settings */}
@@ -327,9 +234,15 @@ export default function UploadPage() {
                         onClick={() => setShowAdvanced(!showAdvanced)}
                         className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors duration-200"
                       >
-                        <h3 className="text-lg font-semibold text-gray-800">
+                        {/* <h3 className="text-lg font-semibold text-gray-800">
                           Advanced Settings
-                        </h3>
+                        </h3> */}
+                        <div className="flex items-center gap-2 mb-4">
+                          <p className="text-lg font-semibold text-gray-800">Advanced settings</p>
+                          <p className="text-sm text-gray-500 italic"> (Use these options to set noise, model size, and language)
+                          </p>
+                        </div>
+
                         <svg
                           className={`w-5 h-5 text-gray-600 transition-transform duration-200 ${
                             showAdvanced ? "rotate-180" : ""
@@ -489,7 +402,7 @@ export default function UploadPage() {
               </div>
             ) : (
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-green-600 mb-4">
+                {/* <h2 className="text-2xl font-bold text-green-600 mb-4">
                   ✅ Sudah selesai
                 </h2>
                 <a
@@ -497,7 +410,7 @@ export default function UploadPage() {
                   className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
                 >
                   Next →
-                </a>
+                </a> */}
               </div>
             )}
           </div>
